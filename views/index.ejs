@@ -1,14 +1,35 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <meta charset="UFT-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" type="text/css" href="./css/style.css">
+    <title>Document</title>
 </head>
 
 <body>
+    <h3>
+        <%= text %>
+    </h3>
+    <header>
+        <p class="title">My To Do List</p>
+        <div class="send-data">
+            <input type="text" name="todo" placeholder="Title...">
+            <span>Add</span>
+        </div>
+    </header>
+    <div class="card">Hit the gym
+        <span class="delete">X</span>
+    </div>
+    <div class="card">Pay bills
+        <span class="delete">X</span>
+    </div>
+    <div class="card">Meet George
+        <span class="delete">X</span>
+    </div>
+
     <script src="./js/main.js"></script>
 </body>
 

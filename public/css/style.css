@@ -3,3 +3,68 @@
     margin: 0;
     box-sizing: border-box;
 }
+
+header {
+    min-width: 300px;
+    max-width: 1000px;
+    margin: auto;
+    padding: 30px 22px 20px;
+    background-color: #f44336;
+}
+
+.title {
+    text-align: center;
+    font-size: 25px;
+    color: white;
+}
+
+.send-data {
+    overflow: hidden;
+}
+
+.send-data input[type=text] {
+    width: 80%;
+    float: left;
+    padding: 4px;
+    font-size: 17px;
+}
+
+.send-data span {
+    display: block;
+    float: left;
+    width: 19%;
+    padding: 6.5px;
+    text-align: center;
+    background-color: #d9d9d9;
+    cursor: pointer;
+}
+
+.card {
+    min-width: 300px;
+    max-width: 800px;
+    position: relative;
+    padding: 14px 22px;
+    font-size: 17px;
+    margin: auto;
+}
+
+.card:nth-child(odd) {
+    background-color: #f9f9f9;
+}
+
+.card:nth-child(even) {
+    background-color: #eeeeee;
+}
+
+.card:hover {
+    text-decoration: line-through;
+    color: white;
+    background-color: #888888;
+}
+.delete {
+    position: absolute;
+    top: 50%;
+    right: 2%;
+    transform: translate(0,-50%);
+    font-size: 9px !important;
+}

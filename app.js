@@ -7,8 +7,12 @@ const passport = require('passport')
 const LocalStrategy = require('passport-local').Strategy
 const path = require('path')
 const mongoose = require('mongoose')
+var MongoClient = require('mongodb').MongoClient;
+
 require('./demo_create_mongo_db.js')
 const User = require('./models/user.js')
+
+var url = "mongodb://localhost:27017";
 
 
 mongoose.connect('mongodb://localhost:27017', (err) => {
@@ -33,12 +37,30 @@ app.set('view engine', 'ejs')
 app.set('views', path.join(__dirname, 'views'))
 
 app.use((req, res, next) => {
-    console.log(req)
     next()
 })
 
 app.get('/', (req, res) => {
-    res.send('Hello my friend')
+    res.render('index', {
+        text: 'Helloo'
+    })
+})
+
+app.post('/', (req, res) => {
+    MongoClient.connect(url, (err, db) => {
+        let dbo = db.db('mydb')
+        dbo.createCollection('to-do', (err, collection) => {
+            if (err) {
+                return console.log('error collectio')
+            }
+            collection.insertOne({ nameOfToDo: req.body.todo, finished: false }, (err, doc) => {
+                if (err) { return console.log('error insert') }
+                console.log(doc)
+                res.json(doc)
+                dbo.close()
+            })
+        })
+    })
 })
 
 app.get('/login', (req, res) => {
@@ -52,9 +74,8 @@ app.post('/login', (req, res) => {
     })
     newUser.save((err) => {
         if (err) return
-        console.log(newUser)
         console.log('saved user')
-    
+
         res.redirect('/')
     })
 })
