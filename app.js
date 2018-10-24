@@ -5,21 +5,13 @@ const cookieParser = require('cookie-parser')
 const session = require('express-session')
 const passport = require('passport')
 const LocalStrategy = require('passport-local').Strategy
-const path = require('path')
+const bcrypt = require('bcrypt-nodejs')
 const mongoose = require('mongoose')
-var MongoClient = require('mongodb').MongoClient;
-
-require('./demo_create_mongo_db.js')
+const mongo = require('mongodb').MongoClient;
+const path = require('path')
 const User = require('./models/user.js')
 
 var url = "mongodb://localhost:27017";
-
-app.use((req, res, next) => {
-    res.set('Access-Control-Allow-Origin', ['*']);
-    res.set('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-    res.set('Access-Control-Allow-Headers', 'Content-Type');
-    next();
-});
 
 mongoose.connect('mongodb://localhost:27017', (err) => {
     if (err) {
@@ -27,6 +19,8 @@ mongoose.connect('mongodb://localhost:27017', (err) => {
     }
     console.log('MONGOOSE CONNECTED')
 })
+
+
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
 app.use(cookieParser())
@@ -42,56 +36,7 @@ app.use(express.static(path.join(__dirname, 'public')))
 app.set('view engine', 'ejs')
 app.set('views', path.join(__dirname, 'views'))
 
-app.use((req, res, next) => {
-    next()
-})
 
-app.get('/', (req, res) => {
-    res.render('index', {
-        text: 'Helloo'
-    })
-})
-
-app.post('/', (req, res) => {
-    console.log(req.body)
-    MongoClient.connect(url, (err, db) => {
-        let dbo = db.db('mydb')
-        dbo.createCollection('to-do', (err, collection) => {
-            if (err) {
-                return console.log('error collectio')
-            }
-            collection.insertOne({ nameOfToDo: req.body.todo, finished: false }, (err, doc) => {
-                if (err) {
-                    return console.log('error insert')
-                }
-                res.json({ nameOfToDo: 'work?', finished: false })
-                db.close()
-            })
-        })
-    })
-})
-
-app.get('/login', (req, res) => {
-    res.render('login')
-})
-
-app.post('/login', (req, res) => {
-    let newUser = new User({
-        username: req.body.username,
-        password: req.body.password
-    })
-    newUser.save((err) => {
-        if (err) return
-        console.log('saved user')
-
-        res.redirect('/')
-    })
-})
-
-app.get('/logout', (req, res) => {
-    req.logout()
-    res.redirect('/')
-})
 
 passport.use('local', new LocalStrategy({
     usernameField: 'username',
@@ -101,10 +46,16 @@ passport.use('local', new LocalStrategy({
     User.findOne({ username: username }, (err, user) => {
         if (err) return
         if (!user) {
-            return console.log('not founded user')
             done(null, false)
+            return console.log('not founded user')
         }
-        done(null, user)
+        const isPasswordCorrect = bcrypt.compareSync(password, user.password)
+        if (isPasswordCorrect) {
+            console.log('password correct')
+            return done(null, user)
+        } else {
+            return done(null, false)
+        }
     })
 }))
 
@@ -121,6 +72,77 @@ passport.deserializeUser((user, done) => {
 
         done(err, foundedUser)
     })
+})
+const loggedIn = (req, res, next) => {
+    if (req.user) {
+        next()
+    } else {
+        res.redirect('/login')
+    }
+}
+app.get('/', loggedIn, (req, res) => {
+    res.render('index')
+})
+
+app.post('/', (req, res) => {
+    let todo1 = req.body.todoTitle
+    mongo.connect(url, (err, db) => {
+        let dbo = db.db('mydb')
+        dbo.createCollection('to-do', (err, collection) => {
+            if (err) {
+                return console.log('error collectio')
+            }
+            collection.insertOne({ todoTitle: todo1, finished: req.body.finished }, (err, doc) => {
+                if (err) {
+                    return console.log('error insert')
+                }
+
+            })
+            collection.find({}, { projection: { _id: 0 } }).toArray((err, arr) => {
+                if (err) {
+                    return console.log('error find')
+                }
+                res.json(arr)
+                db.close()
+
+            })
+        })
+
+    })
+})
+
+app.get('/login', (req, res) => {
+    res.render('login')
+})
+
+app.post('/login', passport.authenticate('local', {
+    failureRedirect: '/login'
+}), (req, res) => {
+    res.redirect('/')
+})
+
+app.get('/registration', (req, res) => {
+    res.render('registration')
+})
+
+app.post('/registration', (req, res) => {
+
+    const hashedPassword = bcrypt.hashSync(req.body.password)
+    req.body.password = hashedPassword
+
+    const newUser = new User({
+        username: req.body.username,
+        password: req.body.password
+    })
+    newUser.save((err, user) => {
+        if (err) return
+        console.log(user)
+        res.redirect('/login')
+    })
+})
+app.get('/logout', (req, res) => {
+    req.logout()
+    res.redirect('/login')
 })
 
 
