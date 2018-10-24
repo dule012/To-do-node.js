@@ -46,8 +46,8 @@ passport.use('local', new LocalStrategy({
     User.findOne({ username: username }, (err, user) => {
         if (err) return
         if (!user) {
-            done(null, false)
-            return console.log('not founded user')
+            console.log('not founded user')
+            return done(null, false)
         }
         const isPasswordCorrect = bcrypt.compareSync(password, user.password)
         if (isPasswordCorrect) {
@@ -75,30 +75,40 @@ passport.deserializeUser((user, done) => {
 })
 const loggedIn = (req, res, next) => {
     if (req.user) {
+        console.log(req.user)
         next()
     } else {
         res.redirect('/login')
     }
 }
 app.get('/', loggedIn, (req, res) => {
-    res.render('index')
+    mongo.connect(url, (err, db) => {
+        if (err) return
+        const dbo = db.db('mydb')
+        dbo.collection('to-do').find({ username: req.user.username }, { projection: { _id: 0 } }).toArray((err, arr) => {
+            res.render('index', {
+                arrOftodos: arr
+            })
+            db.close()
+        })
+    })
+
 })
 
 app.post('/', (req, res) => {
-    let todo1 = req.body.todoTitle
     mongo.connect(url, (err, db) => {
         let dbo = db.db('mydb')
         dbo.createCollection('to-do', (err, collection) => {
             if (err) {
-                return console.log('error collectio')
+                return console.log('error collection')
             }
-            collection.insertOne({ todoTitle: todo1, finished: req.body.finished }, (err, doc) => {
+            collection.insertOne({ todoTitle: req.body.todoTitle, finished: req.body.finished, username: req.user.username }, (err, doc) => {
                 if (err) {
                     return console.log('error insert')
                 }
 
             })
-            collection.find({}, { projection: { _id: 0 } }).toArray((err, arr) => {
+            collection.find({ username: req.user.username }, { projection: { _id: 0 } }).toArray((err, arr) => {
                 if (err) {
                     return console.log('error find')
                 }
@@ -110,6 +120,11 @@ app.post('/', (req, res) => {
 
     })
 })
+
+app.put('/', (req, res) => {
+
+})
+
 
 app.get('/login', (req, res) => {
     res.render('login')

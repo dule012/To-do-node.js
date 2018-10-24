@@ -1,6 +1,6 @@
-const password = document.getElementsByName('password')[0]
-const repeatedPassword = document.getElementsByName('repeatedpassword')[0]
-const submit = document.getElementsByName('submit')[0]
+const password = document.querySelector('input[type=password]')
+const repeatedPassword = document.querySelectorAll('input[type=password]')[1]
+const submit = document.querySelector('input[type=submit]')
 submit.addEventListener('click', (e) => {
     if (password.value != repeatedPassword.value) {
         console.log('different pass')

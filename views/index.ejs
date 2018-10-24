@@ -13,11 +13,17 @@
     <header>
         <p class="title">My To Do List</p>
         <div class="send-data">
-            <input type="text" name="todo" placeholder="Title...">
+            <input type="text" name="todoTitle" placeholder="Title...">
             <span>Add</span>
         </div>
     </header>
-    <div class="card">Hit the gym
+    <% for(let i =0; i < arrOftodos.length; i++){ %>
+        <div class="card">
+            <%= arrOftodos[i].todoTitle %>
+                <span class="delete">X</span>
+        </div>
+        <% } %>
+            <!-- <div class="card">Hit the gym
         <span class="delete">X</span>
     </div>
     <div class="card">Pay bills
@@ -25,9 +31,9 @@
     </div>
     <div class="card">Meet George
         <span class="delete">X</span>
-    </div>
+    </div> -->
 
-    <script src="./js/main.js"></script>
+            <script src="./js/main.js"></script>
 </body>
 
 </html>
