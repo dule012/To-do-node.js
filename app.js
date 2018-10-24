@@ -14,6 +14,12 @@ const User = require('./models/user.js')
 
 var url = "mongodb://localhost:27017";
 
+app.use((req, res, next) => {
+    res.set('Access-Control-Allow-Origin', ['*']);
+    res.set('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+    res.set('Access-Control-Allow-Headers', 'Content-Type');
+    next();
+});
 
 mongoose.connect('mongodb://localhost:27017', (err) => {
     if (err) {
@@ -47,6 +53,7 @@ app.get('/', (req, res) => {
 })
 
 app.post('/', (req, res) => {
+    console.log(req.body)
     MongoClient.connect(url, (err, db) => {
         let dbo = db.db('mydb')
         dbo.createCollection('to-do', (err, collection) => {
@@ -54,10 +61,11 @@ app.post('/', (req, res) => {
                 return console.log('error collectio')
             }
             collection.insertOne({ nameOfToDo: req.body.todo, finished: false }, (err, doc) => {
-                if (err) { return console.log('error insert') }
-                console.log(doc)
-                res.json(doc)
-                dbo.close()
+                if (err) {
+                    return console.log('error insert')
+                }
+                res.json({ nameOfToDo: 'work?', finished: false })
+                db.close()
             })
         })
     })

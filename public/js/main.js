@@ -5,9 +5,9 @@ const button = document.querySelector('.send-data > span')
 button.addEventListener('click', () => {
     const xhr = new XMLHttpRequest()
 
-    xhr.open('POST', 'https://localhost:3001/home')
+    xhr.open('POST', '/')
     xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded')
-    xhr.send(`todo=${input.value}`)
+    xhr.send('todo=isItWork?')
     xhr.addEventListener('load', () => {
         console.log('loaded')
         if (xhr.status >= 200 && xhr.status < 400) {
