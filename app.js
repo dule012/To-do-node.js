@@ -11,6 +11,17 @@ const mongo = require('mongodb').MongoClient;
 const path = require('path')
 const User = require('./models/user.js')
 
+
+
+app.all('*', function (req, res, next) {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'PUT, GET, POST, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'X-Requested-With, content-type, Authorization');
+    next();
+});
+
+
+
 var url = "mongodb://localhost:27017";
 
 mongoose.connect('mongodb://localhost:27017', (err) => {
@@ -122,7 +133,42 @@ app.post('/', (req, res) => {
 })
 
 app.put('/', (req, res) => {
+    mongo.connect(url, (err, db) => {
+        const dbo = db.db('mydb')
+        dbo.collection('to-do').updateOne({
+            $and: [{ username: req.user.username }, { todoTitle: req.body.todoTitle }]
+        }, { $set: { finished: req.body.finished } }, (err, doc) => {
+            if (err) {
+                return console.log('update error')
 
+            }
+        })
+        dbo.collection('to-do').findOne({ $and: [{ username: req.user.username }, { todoTitle: req.body.todoTitle }] }, { projection: { _id: 0 } }, (err, doc) => {
+            if (err) {
+                return console.log('find error')
+            }
+            // console.log(doc)
+            res.json(doc)
+            db.close()
+        })
+
+    })
+})
+
+app.delete('/', (req, res) => {
+    mongo.connect(url, (err, db) => {
+        const dbo = db.db('mydb')
+        dbo.collection('to-do').deleteOne({ $and: [{ username: req.user.username }, { todoTitle: req.body.todoTitle }] }, (err, del) => {
+            if (err) {
+                return console.log('error delete')
+            } else {
+                console.log('deleted doc')
+                res.send('deleted')
+                db.close()
+            }
+
+        })
+    })
 })
 
 

@@ -12,7 +12,7 @@ header {
     background-color: #f44336;
 }
 
-.title {
+.name {
     text-align: center;
     font-size: 25px;
     color: white;
@@ -39,15 +39,6 @@ header {
     cursor: pointer;
 }
 
-.card {
-    min-width: 300px;
-    max-width: 800px;
-    position: relative;
-    padding: 14px 22px;
-    font-size: 17px;
-    margin: auto;
-}
-
 .card:nth-child(odd) {
     background-color: #f9f9f9;
 }
@@ -56,15 +47,34 @@ header {
     background-color: #eeeeee;
 }
 
-.card:hover {
+.to-finish {
+    min-width: 300px;
+    max-width: 800px;
+    position: relative;
+    padding: 14px 22px;
+    font-size: 17px;
+    margin: auto;
+    cursor: pointer;
+}
+
+.finished1 {
+    min-width: 300px;
+    max-width: 800px;
+    position: relative;
+    padding: 14px 22px;
+    font-size: 17px;
+    margin: auto;
+    cursor: pointer;
     text-decoration: line-through;
     color: white;
-    background-color: #888888;
+    background-color: #888888 !important;
 }
+
 .delete {
     position: absolute;
     top: 50%;
     right: 2%;
-    transform: translate(0,-50%);
-    font-size: 9px !important;
+    transform: translate(0, -50%);
+    font-size: 11px !important;
+    cursor: pointer;
 }

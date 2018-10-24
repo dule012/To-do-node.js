@@ -5,15 +5,77 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <style>
+        form {
+            min-width: 300px;
+            position: absolute;
+            top: 10vh;
+            left: 50%;
+            transform: translate(-50%, 0);
+            background-color: black;
+            padding: 100px 0;
+            border-radius: 30px;
+        }
+
+        .login {
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            transform: translate(-50%, 0);
+            color: white;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        input[type=text],
+        input[type=password] {
+            display: block;
+            width: 80%;
+            margin: auto;
+            padding: 6px;
+            font-size: 14px;
+            border: none;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        input[type=submit] {
+            position: absolute;
+            top: 70%;
+            left: 50%;
+            transform: translate(-50%, 0);
+            padding: 5px;
+            font-size: 15px;
+            cursor: pointer;
+            color: black;
+            font-weight: bold;
+            background-color: white;
+        }
+
+        .registration {
+            position: absolute;
+            left: 35%;
+            top: 80%;
+            transform: (-50%, 0);
+            color: white;
+            font-size: 19px;
+            cursor: pointer;
+        }
+
+        .registration:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 
 <body>
     <form action="/login" method="POST">
+        <p class="login">Login</p>
         <input type="text" name="username" placeholder="username">Username
         <input type="password" name="password" placeholder="password">Password
-        <input type="submit" name="submit" value="submit">
+        <input type="submit" name="submit" value="Submit">
+        <p class="registration">Registration</p>
     </form>
-    <p class="registration">Registration</p>
     <script src="./js/login.js"></script>
 </body>
 
