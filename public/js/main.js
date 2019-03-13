@@ -8,6 +8,7 @@ const body = document.getElementsByTagName('body')[0]
 // console.log(title[1].textContent.trim())
 
 const xhrPUT = (value, isFinished) => {
+
     const xhr = new XMLHttpRequest
     xhr.open('PUT', '/')
     xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded')
@@ -59,7 +60,7 @@ const xhrPOST = () => {
             div.setAttribute('class', 'card to-finish')
             const p = document.createElement('p')
             p.setAttribute('class', 'title')
-            const pText = document.createTextNode(json[json.length - 1].todoTitle)
+            const pText = document.createTextNode(json.todoTitle)
             p.append(pText)
             div.append(p)
 
@@ -69,7 +70,6 @@ const xhrPOST = () => {
             span.append(spanText)
 
             div.append(span)
-
             body.append(div)
 
             cards[cards.length - 1].addEventListener('click', (e) => {

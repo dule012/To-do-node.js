@@ -12,24 +12,29 @@ const path = require('path')
 const User = require('./models/user.js')
 
 
+let dbMain, collection_todo
 
-app.all('*', function (req, res, next) {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Methods', 'PUT, GET, POST, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'X-Requested-With, content-type, Authorization');
-    next();
-});
-
-
-
-var url = "mongodb://localhost:27017";
+mongo.connect('mongodb://localhost:27017', (err, db) => {
+    if (err) return
+    dbMain = db.db('mydb')
+    dbMain.createCollection('to-do', (err, collection) => {
+        collection_todo = collection
+    })
+})
 
 mongoose.connect('mongodb://localhost:27017', (err) => {
     if (err) {
-        return console.log('ERROR MONGOOSE')
+        // return console.log(err)
     }
-    console.log('MONGOOSE CONNECTED')
+    // console.log('mongoose CONNECTED')
 })
+
+// app.all('*', function (req, res, next) {
+//     res.header('Access-Control-Allow-Origin', '*');
+//     res.header('Access-Control-Allow-Methods', 'PUT, GET, POST, DELETE, OPTIONS');
+//     res.header('Access-Control-Allow-Headers', 'X-Requested-With, content-type, Authorization');
+//     next();
+// });
 
 
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -46,6 +51,7 @@ app.use(passport.session())
 app.use(express.static(path.join(__dirname, 'public')))
 app.set('view engine', 'ejs')
 app.set('views', path.join(__dirname, 'views'))
+
 
 
 
@@ -86,88 +92,64 @@ passport.deserializeUser((user, done) => {
 })
 const loggedIn = (req, res, next) => {
     if (req.user) {
-        console.log(req.user)
         next()
     } else {
         res.redirect('/login')
     }
 }
+
 app.get('/', loggedIn, (req, res) => {
-    mongo.connect(url, (err, db) => {
-        if (err) return
-        const dbo = db.db('mydb')
-        dbo.collection('to-do').find({ username: req.user.username }, { projection: { _id: 0 } }).toArray((err, arr) => {
-            res.render('index', {
-                arrOftodos: arr
-            })
-            db.close()
+    dbMain.collection('to-do').find({ username: req.user.username }, { projection: { _id: 0 } }).toArray((err, arr) => {
+        res.render('index', {
+            arrOftodos: arr
         })
     })
-
 })
 
 app.post('/', (req, res) => {
-    mongo.connect(url, (err, db) => {
-        let dbo = db.db('mydb')
-        dbo.createCollection('to-do', (err, collection) => {
+    dbMain.createCollection('to-do', (err, collection) => {
+        if (err) {
+            return
+        }
+        collection.insertOne({ todoTitle: req.body.todoTitle, finished: req.body.finished, username: req.user.username }, (err, doc) => {
             if (err) {
-                return console.log('error collection')
+                return
             }
-            collection.insertOne({ todoTitle: req.body.todoTitle, finished: req.body.finished, username: req.user.username }, (err, doc) => {
-                if (err) {
-                    return console.log('error insert')
-                }
-
-            })
-            collection.find({ username: req.user.username }, { projection: { _id: 0 } }).toArray((err, arr) => {
-                if (err) {
-                    return console.log('error find')
-                }
-                res.json(arr)
-                db.close()
-
-            })
         })
-
+        collection.findOne({ username: req.user.username, todoTitle: req.body.todoTitle }, { projection: { _id: 0 } }, (err, doc) => {
+            if (err) {
+                return
+            }
+            res.json(doc)
+        })
     })
 })
 
 app.put('/', (req, res) => {
-    mongo.connect(url, (err, db) => {
-        const dbo = db.db('mydb')
-        dbo.collection('to-do').updateOne({
-            $and: [{ username: req.user.username }, { todoTitle: req.body.todoTitle }]
-        }, { $set: { finished: req.body.finished } }, (err, doc) => {
-            if (err) {
-                return console.log('update error')
-
-            }
-        })
-        dbo.collection('to-do').findOne({ $and: [{ username: req.user.username }, { todoTitle: req.body.todoTitle }] }, { projection: { _id: 0 } }, (err, doc) => {
-            if (err) {
-                return console.log('find error')
-            }
-            // console.log(doc)
-            res.json(doc)
-            db.close()
-        })
-
+    dbMain.collection('to-do').updateOne({
+        $and: [{ username: req.user.username }, { todoTitle: req.body.todoTitle }]
+    }, { $set: { finished: req.body.finished } }, (err, doc) => {
+        if (err) {
+            return
+        }
     })
+    dbMain.collection('to-do').findOne({ username: req.user.username, todoTitle: req.body.todoTitle }, { projection: { _id: 0 } }, (err, doc) => {
+        if (err) {
+            return
+        }
+        res.json(doc)
+    })
+
 })
 
 app.delete('/', (req, res) => {
-    mongo.connect(url, (err, db) => {
-        const dbo = db.db('mydb')
-        dbo.collection('to-do').deleteOne({ $and: [{ username: req.user.username }, { todoTitle: req.body.todoTitle }] }, (err, del) => {
-            if (err) {
-                return console.log('error delete')
-            } else {
-                console.log('deleted doc')
-                res.send('deleted')
-                db.close()
-            }
+    dbMain.collection('to-do').deleteOne({ $and: [{ username: req.user.username }, { todoTitle: req.body.todoTitle }] }, (err, del) => {
+        if (err) {
+            return
+        } else {
+            res.send('deleted')
+        }
 
-        })
     })
 })
 
@@ -197,7 +179,6 @@ app.post('/registration', (req, res) => {
     })
     newUser.save((err, user) => {
         if (err) return
-        console.log(user)
         res.redirect('/login')
     })
 })
@@ -206,8 +187,10 @@ app.get('/logout', (req, res) => {
     res.redirect('/login')
 })
 
-
-app.listen(3001, () => {
+app.get('*', function (req, res) {
+    res.redirect('/')
+});
+app.listen(3002, () => {
     console.log('server listening')
 })
 
